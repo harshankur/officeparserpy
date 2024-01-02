@@ -11,7 +11,7 @@ from setuptools import setup
 
 setup(
     name='officeparserpy',
-    version='1.0.7',
+    version='1.0.8',
     author='Harsh Ankur',
     author_email='harshankur@outlook.com',
     description='A Python library to parse text out of any office file. Currently supports docx, pptx, xlsx, odt, odp, ods, pdf files.',

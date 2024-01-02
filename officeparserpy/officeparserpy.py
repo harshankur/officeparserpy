@@ -349,7 +349,7 @@ def _parse_word(filepath: str, config: OfficeParserConfig) -> str:
         for paragraph_node in xml_paragraph_nodes_list:
             text_node_list = list(paragraph_node.getElementsByTagName('w:t'))
             if text_node_list:
-                paragraph_text.append(''.join(text_node.firstChild.nodeValue for text_node in text_node_list))
+                paragraph_text.append(''.join(text_node.firstChild.nodeValue for text_node in text_node_list if text_node.firstChild and text_node.firstChild.nodeValue is not None))
         response_text.append(get_newline_delimiter(config).join(paragraph_text))
 
     # Join all response_text array
@@ -430,7 +430,7 @@ def _parse_powerpoint(filepath: str, config: OfficeParserConfig) -> str:
         for paragraph_node in xml_paragraph_nodes_list:
             text_node_list = list(paragraph_node.getElementsByTagName('a:t'))
             if text_node_list:
-                paragraph_text.append(''.join(text_node.firstChild.nodeValue for text_node in text_node_list))
+                paragraph_text.append(''.join(text_node.firstChild.nodeValue for text_node in text_node_list if text_node.firstChild and text_node.firstChild.nodeValue is not None))
         response_text.append(get_newline_delimiter(config).join(paragraph_text))
 
     # Join all response_text array
@@ -515,7 +515,7 @@ def _parse_excel(filepath: str, config: OfficeParserConfig) -> str:
     shared_strings_xml_t_nodes_list = list(
         parseString(xml_content_files_object['shared_strings_file']).getElementsByTagName('t'))
     # Create shared string array. This will be used as a map to get strings from within sheet files.
-    shared_strings = [t_node.childNodes[0].nodeValue for t_node in shared_strings_xml_t_nodes_list]
+    shared_strings = [t_node.firstChild.nodeValue for t_node in shared_strings_xml_t_nodes_list if t_node.firstChild and t_node.firstChild.nodeValue is not None]
 
     # Parse Sheet files
     for sheet_xml_content in xml_content_files_object['sheet_files']:
@@ -525,9 +525,9 @@ def _parse_excel(filepath: str, config: OfficeParserConfig) -> str:
         response_text.append(
             get_newline_delimiter(config).join([
                 (shared_strings[
-                     int(c_node.getElementsByTagName('v')[0].childNodes[0].nodeValue)] if c_node.getAttribute(
-                    't') == 's' else c_node.getElementsByTagName('v')[0].childNodes[0].nodeValue)
-                for c_node in sheets_xml_c_nodes_list if c_node.getElementsByTagName('v')
+                     int(c_node.getElementsByTagName('v')[0].firstChild.nodeValue)] if c_node.getAttribute(
+                    't') == 's' else c_node.getElementsByTagName('v')[0].firstChild.nodeValue)
+                for c_node in sheets_xml_c_nodes_list if c_node.getElementsByTagName('v') and c_node.getElementsByTagName('v')[0].firstChild and c_node.getElementsByTagName('v')[0].firstChild.nodeValue is not None
             ])
         )
 
@@ -539,8 +539,9 @@ def _parse_excel(filepath: str, config: OfficeParserConfig) -> str:
         response_text.append(
             get_newline_delimiter(config).join([
                 ''.join([
-                    text_node.childNodes[0].nodeValue
+                    text_node.firstChild.nodeValue
                     for text_node in paragraph_node.getElementsByTagName('a:t')
+                    if text_node.firstChild and text_node.firstChild.nodeValue is not None
                 ])
                 for paragraph_node in drawings_xml_paragraph_nodes_list if paragraph_node.getElementsByTagName('a:t')
             ])
@@ -551,7 +552,11 @@ def _parse_excel(filepath: str, config: OfficeParserConfig) -> str:
         # Find text nodes with c:v tags
         charts_xml_cv_nodes_list = list(parseString(chart_xml_content).getElementsByTagName('c:v'))
         # Store all the text content to respond
-        response_text.append(get_newline_delimiter(config).join([c_v_node.childNodes[0].nodeValue for c_v_node in charts_xml_cv_nodes_list]))
+        response_text.append(get_newline_delimiter(config).join([
+            c_v_node.firstChild.nodeValue
+            for c_v_node in charts_xml_cv_nodes_list
+            if c_v_node.firstChild and c_v_node.firstChild.nodeValue is not None
+        ]))
 
     # Join all response_text array
     response_text = get_newline_delimiter(config).join(response_text)
