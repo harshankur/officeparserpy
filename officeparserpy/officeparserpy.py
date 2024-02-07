@@ -515,7 +515,7 @@ def _parse_excel(filepath: str, config: OfficeParserConfig) -> str:
     shared_strings_xml_t_nodes_list = list(
         parseString(xml_content_files_object['shared_strings_file']).getElementsByTagName('t'))
     # Create shared string array. This will be used as a map to get strings from within sheet files.
-    shared_strings = [t_node.firstChild.nodeValue for t_node in shared_strings_xml_t_nodes_list if t_node.firstChild and t_node.firstChild.nodeValue is not None]
+    shared_strings = [t_node.firstChild.nodeValue if t_node.firstChild and t_node.firstChild.nodeValue is not None else '' for t_node in shared_strings_xml_t_nodes_list]
 
     # Parse Sheet files
     for sheet_xml_content in xml_content_files_object['sheet_files']:
