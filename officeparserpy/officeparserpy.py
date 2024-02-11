@@ -304,7 +304,7 @@ def _parse_word(filepath: str, config: OfficeParserConfig) -> str:
     """
 
     # The target content xml files for the docx file
-    target_files_regex = r"word\/(document|footnotes|endnotes)\.xml"
+    target_files_regex = r"word\/(document[\d+]?|footnotes[\d+]?|endnotes[\d+]?)\.xml"
 
     # The decompress location which contains the filename in it.
     decompress_location = f"{get_temp_files_location(config)}/{filepath.split('/').pop()}"
@@ -315,7 +315,7 @@ def _parse_word(filepath: str, config: OfficeParserConfig) -> str:
 
     # Verify if atleast the document xml file exists in the extracted files list.
     # Otherwise, raise FileCorrupted error
-    if 'word/document.xml' not in extracted_files:
+    if not any(re.match(r"word\/document[\d+]?\.xml", filename) for filename in extracted_files):
         raise FileCorrupted(filepath)
 
     # List of all file content
